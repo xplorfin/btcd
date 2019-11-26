@@ -6,6 +6,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/rpcclient"
 	"golang.org/x/sync/errgroup"
@@ -24,6 +25,7 @@ func main() {
 	var i int64
 	for i = initialValue; i <= height; i++ {
 		block := GetBlock(i)
+		fmt.Println(i)
 
 		g, ctx := errgroup.WithContext(context.Background())
 		transactions := make(chan rpcclient.FutureGetRawTransactionVerboseResult)
@@ -46,7 +48,7 @@ func main() {
 			return nil
 		})
 
-		for i := 0; i < 10; i++ {
+		for i := 0; i < 1000; i++ {
 			g.Go(func() error {
 				for transactionFuture := range transactions {
 					_, err := transactionFuture.Receive()

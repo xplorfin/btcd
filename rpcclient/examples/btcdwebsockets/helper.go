@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 )
 
-func CreateClient() rpcclient.Client{
+func CreateClient() *rpcclient.Client{
 	ntfnHandlers := rpcclient.NotificationHandlers{
 		OnFilteredBlockConnected: func(height int32, header *wire.BlockHeader, txns []*btcutil.Tx) {
 			log.Printf("Block connected: %v (%d) %v",
@@ -41,7 +41,7 @@ func CreateClient() rpcclient.Client{
 	if err != nil {
 		log.Fatal(err)
 	}
-	return *client
+	return client
 }
 
 func GetBlock(height int64) btcjson.GetBlockVerboseResult {
