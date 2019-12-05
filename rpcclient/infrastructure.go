@@ -158,7 +158,7 @@ type Client struct {
 	disconnected bool
 
 	// wether or not to batch requests, false unless changed by Bulk()
-	batch bool
+	batch     bool
 	batchList *list.List
 
 	// retryCount holds the number of times the client has tried to
@@ -749,7 +749,7 @@ func (c *Client) handleSendPostMessage(details *sendPostDetails) {
 	var batchResponse json.RawMessage
 	if c.batch {
 		err = json.Unmarshal(respBytes, &batchResponse)
-	}else {
+	} else {
 		err = json.Unmarshal(respBytes, &resp)
 	}
 	if err != nil {
@@ -766,7 +766,7 @@ func (c *Client) handleSendPostMessage(details *sendPostDetails) {
 		// errors must be dealt with downstream since a whole request cannot
 		// "error out" other than through the status code error handled above
 		res, err = batchResponse, nil
-	}else {
+	} else {
 		res, err = resp.result()
 	}
 	jReq.responseChan <- &response{result: res, err: err}
@@ -939,7 +939,6 @@ func (c *Client) sendCmd(cmd interface{}) chan *response {
 		marshalledJSON: marshalledJSON,
 		responseChan:   responseChan,
 	}
-
 
 	c.sendRequest(jReq)
 
@@ -1307,8 +1306,8 @@ func New(config *ConnConfig, ntfnHandlers *NotificationHandlers) (*Client, error
 		httpClient:      httpClient,
 		requestMap:      make(map[uint64]*list.Element),
 		requestList:     list.New(),
-		batch: 			 false,
-		batchList: 		 list.New(),
+		batch:           false,
+		batchList:       list.New(),
 		ntfnHandlers:    ntfnHandlers,
 		ntfnState:       newNotificationState(),
 		sendChan:        make(chan []byte, sendBufferSize),
@@ -1477,7 +1476,6 @@ func (c *Client) Batch() Client {
 	return *c
 }
 
-
 func (c *Client) sendAsync() FutureGetBulkResult {
 	// convert the array of marshalled json requests to a single request we can send
 	responseChan := make(chan *response, 1)
@@ -1503,10 +1501,10 @@ func (c *Client) sendAsync() FutureGetBulkResult {
 }
 
 // send batch requests
-func (c *Client) Send()  {
+func (c *Client) Send() {
 	result, err := c.sendAsync().Receive()
 
-	if err != nil{
+	if err != nil {
 		log.Error(err)
 	}
 
@@ -1523,7 +1521,7 @@ func (c *Client) Send()  {
 			requestError = errors.New(individualResult.Error)
 		}
 
-		result :=  response{
+		result := response{
 			result: fullResult,
 			err:    requestError,
 		}

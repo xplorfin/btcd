@@ -20,7 +20,7 @@ func main() {
 		`[]`,
 		`[1]`,
 		`[1,2,3]`,
-		`{"foo": "boo"}`,                              // should be an invalid request
+		`{"foo": "boo"}`, // should be an invalid request
 		`{"jsonrpc": "1.0", "foo": "boo", "id": "1"}`,
 		`{"jsonrpc": "1.0", "method": "getblockcount", "params": [], "id": "1"}`,
 		`{"jsonrpc": "1.0", "method": "getblockcount", "params": "a", "id": "1"}`, // should be invalid since params is neither an array nor a json object.
