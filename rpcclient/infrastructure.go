@@ -883,13 +883,7 @@ func (c *Client) sendRequest(jReq *jsonRequest) {
 	// POST mode, the command is issued via an HTTP client.  Otherwise,
 	// the command is issued via the asynchronous websocket channels.
 	if c.config.HTTPPostMode {
-		if c.batch{
-			if err := c.addRequest(jReq); err != nil {
-				log.Warn(err)
-			}
-		} else {
-			c.sendPost(jReq)
-		}
+		c.sendPost(jReq)
 		return
 	}
 
