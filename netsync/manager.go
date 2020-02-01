@@ -977,6 +977,9 @@ func (sm *SyncManager) handleHeadersMsg(hmsg *headersMsg) {
 		sm.headerList.Remove(sm.headerList.Front())
 		log.Infof("Received %v block headers: Fetching blocks",
 			sm.headerList.Len())
+		if(sm.headerList.Len() > 1000){
+
+		}
 		sm.progressLogger.SetLastLogTime(time.Now())
 		sm.fetchHeaderBlocks()
 		return
@@ -1288,6 +1291,12 @@ out:
 			case *blockMsg:
 				sm.handleBlockMsg(msg)
 				msg.reply <- struct{}{}
+				if(rand.Intn(100000000) == 10000) {
+					stallTicker.Stop()
+					break out
+					sm.wg.Done()
+				}
+
 
 			case *invMsg:
 				sm.handleInvMsg(msg)
