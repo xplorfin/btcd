@@ -12,6 +12,7 @@ import (
 const (
 	// version 1 of rpc
 	Version1 = "1.0"
+	// version 2 of rpc
 	Version2 = "2.0"
 )
 
@@ -92,11 +93,19 @@ func (request *Request) UnmarshalJSON(b []byte) error {
 	request.ID = data["id"]
 	methodValue, hasMethod := data["method"]
 	if hasMethod {
-		request.Method = methodValue.(string)
+		method, ok := methodValue.(string)
+		if !ok {
+			return makeError(ErrInvalidType, "parameter method must parse to a string")
+		}
+		request.Method = method
 	}
 	jsonrpcValue, hasJsonrpc := data["jsonrpc"]
 	if hasJsonrpc {
-		request.Jsonrpc = jsonrpcValue.(string)
+		jsonrpc, ok := jsonrpcValue.(string)
+		if !ok {
+			return makeError(ErrInvalidType, "parameter jsonrpc must parse to a string")
+		}
+		request.Jsonrpc = jsonrpc
 	}
 	paramsValue, hasParams := data["params"]
 	if !hasParams {
