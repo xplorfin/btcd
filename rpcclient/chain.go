@@ -9,7 +9,6 @@ import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
-
 	"github.com/btcsuite/btcd/btcjson"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/wire"
@@ -19,8 +18,7 @@ import (
 // GetBestBlockAsync RPC invocation (or an applicable error).
 type FutureGetBestBlockHashResult chan *response
 
-// Receive waits for the response promised by the future and returns the hash of
-// the best block in the longest block chain.
+// Receive waits for the response promised by the future and returns error if present
 func (r FutureGetBestBlockHashResult) Receive() (*chainhash.Hash, error) {
 	res, err := receiveFuture(r)
 	if err != nil {
@@ -1184,6 +1182,18 @@ func (c *Client) GetCFilterHeader(blockHash *chainhash.Hash,
 	return c.GetCFilterHeaderAsync(blockHash, filterType).Receive()
 }
 
+// FutureGetBulkResult waits for the responses promised by the future
+// and returns them in a channel
+type FutureGetBulkResult chan *response
+
+type IndividualBulkResult struct {
+	Result interface{} `json:"result"`
+	Error  string      `json:"error"`
+	Id     uint64      `json:"id"`
+}
+
+type BulkResult = map[uint64]IndividualBulkResult
+
 // FutureGetBlockStatsResult is a future promise to deliver the result of a
 // GetBlockStatsAsync RPC invocation (or an applicable error).
 type FutureGetBlockStatsResult chan *response
@@ -1223,4 +1233,25 @@ func (c *Client) GetBlockStatsAsync(hashOrHeight interface{}, stats *[]string) F
 // Second argument allows to select certain stats to return.
 func (c *Client) GetBlockStats(hashOrHeight interface{}, stats *[]string) (*btcjson.GetBlockStatsResult, error) {
 	return c.GetBlockStatsAsync(hashOrHeight, stats).Receive()
+}
+
+// Receive waits for the response promised by the future and returns the hash of
+// the best block in the longest block chain.
+func (r FutureGetBulkResult) Receive() (BulkResult, error) {
+	m := make(BulkResult)
+	res, err := receiveFuture(r)
+	if err != nil {
+		return nil, err
+	}
+	var arr []IndividualBulkResult
+	err = json.Unmarshal(res, &arr)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, results := range arr {
+		m[results.Id] = results
+	}
+
+	return m, nil
 }
