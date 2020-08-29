@@ -4037,7 +4037,7 @@ func (s *rpcServer) jsonRPCRead(w http.ResponseWriter, r *http.Request, isAdmin 
 				Message: fmt.Sprintf("Failed to parse request: %v",
 					err),
 			}
-			resp, err = btcjson.MarshalResponse("1.0", nil, nil, jsonErr)
+			resp, err = btcjson.MarshalResponse(btcjson.Version1, nil, nil, jsonErr)
 			if err != nil {
 				rpcsLog.Errorf("Failed to create reply: %v", err)
 			}

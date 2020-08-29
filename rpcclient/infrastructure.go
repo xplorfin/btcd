@@ -928,9 +928,9 @@ func (c *Client) sendRequest(jReq *jsonRequest) {
 // future.  It handles both websocket and HTTP POST mode depending on the
 // configuration of the client.
 func (c *Client) sendCmd(cmd interface{}) chan *response {
-	rpcVersion := "1.0"
+	rpcVersion := btcjson.Version1
 	if c.batch {
-		rpcVersion = "2.0"
+		rpcVersion = btcjson.Version2
 	}
 	// Get the method associated with the command.
 	method, err := btcjson.CmdMethod(cmd)

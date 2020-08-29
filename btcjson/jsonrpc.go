@@ -9,6 +9,12 @@ import (
 	"fmt"
 )
 
+const (
+	// version 1 of rpc
+	Version1 = "1.0"
+	Version2 = "2.0"
+)
+
 // RPCErrorCode represents an error code to be used as a part of an RPCError
 // which is in turn used in a JSON-RPC Response object.
 //
@@ -126,7 +132,7 @@ func (request *Request) UnmarshalJSON(b []byte) error {
 // request.
 func NewRequest(rpcVersion string, id interface{}, method string, params []interface{}) (*Request, error) {
 	// default to JSON-RPC 1.0 if RPC type is not specified
-	if rpcVersion != "2.0" && rpcVersion != "1.0" {
+	if rpcVersion != Version2 && rpcVersion != Version1 {
 		str := fmt.Sprintf("rpcversion '%s' is invalid", rpcVersion)
 		return nil, makeError(ErrInvalidType, str)
 	}
@@ -171,7 +177,7 @@ type Response struct {
 // Typically callers will instead want to create the fully marshalled JSON-RPC
 // response to send over the wire with the MarshalResponse function.
 func NewResponse(rpcVersion string, id interface{}, marshalledResult []byte, rpcErr *RPCError) (*Response, error) {
-	if rpcVersion != "2.0" && rpcVersion != "1.0" {
+	if rpcVersion != Version2 && rpcVersion != Version1 {
 		str := fmt.Sprintf("rpcversion '%s' is invalid", rpcVersion)
 		return nil, makeError(ErrInvalidType, str)
 	}
@@ -194,7 +200,7 @@ func NewResponse(rpcVersion string, id interface{}, marshalledResult []byte, rpc
 // a JSON-RPC response byte slice that is suitable for transmission to a
 // JSON-RPC client.
 func MarshalResponse(rpcVersion string, id interface{}, result interface{}, rpcErr *RPCError) ([]byte, error) {
-	if rpcVersion != "2.0" && rpcVersion != "1.0" {
+	if rpcVersion != Version2 && rpcVersion != Version1 {
 		str := fmt.Sprintf("rpcversion '%s' is invalid", rpcVersion)
 		return nil, makeError(ErrInvalidType, str)
 	}

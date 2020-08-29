@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
+
 	"github.com/btcsuite/btcd/btcjson"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/wire"
@@ -18,7 +19,8 @@ import (
 // GetBestBlockAsync RPC invocation (or an applicable error).
 type FutureGetBestBlockHashResult chan *response
 
-// Receive waits for the response promised by the future and returns error if present
+// Receive waits for the response promised by the future and returns the hash of
+// the best block in the longest block chain.
 func (r FutureGetBestBlockHashResult) Receive() (*chainhash.Hash, error) {
 	res, err := receiveFuture(r)
 	if err != nil {
@@ -1186,6 +1188,8 @@ func (c *Client) GetCFilterHeader(blockHash *chainhash.Hash,
 // and returns them in a channel
 type FutureGetBulkResult chan *response
 
+// IndividualBulkResult represents one result
+//from a bulk json rpc api
 type IndividualBulkResult struct {
 	Result interface{} `json:"result"`
 	Error  string      `json:"error"`
