@@ -695,7 +695,7 @@ func (*wsNotificationManager) notifyBlockConnected(clients map[chan struct{}]*ws
 	// Notify interested websocket clients about the connected block.
 	ntfn := btcjson.NewBlockConnectedNtfn(block.Hash().String(), block.Height(),
 		block.MsgBlock().Header.Timestamp.Unix())
-	marshalledJSON, err := btcjson.MarshalCmd(btcjson.Version1, nil, ntfn)
+	marshalledJSON, err := btcjson.MarshalCmd(btcjson.RpcVersion1, nil, ntfn)
 	if err != nil {
 		rpcsLog.Errorf("Failed to marshal block connected notification: "+
 			"%v", err)
@@ -719,7 +719,7 @@ func (*wsNotificationManager) notifyBlockDisconnected(clients map[chan struct{}]
 	// Notify interested websocket clients about the disconnected block.
 	ntfn := btcjson.NewBlockDisconnectedNtfn(block.Hash().String(),
 		block.Height(), block.MsgBlock().Header.Timestamp.Unix())
-	marshalledJSON, err := btcjson.MarshalCmd(btcjson.Version1, nil, ntfn)
+	marshalledJSON, err := btcjson.MarshalCmd(btcjson.RpcVersion1, nil, ntfn)
 	if err != nil {
 		rpcsLog.Errorf("Failed to marshal block disconnected "+
 			"notification: %v", err)
@@ -765,7 +765,7 @@ func (m *wsNotificationManager) notifyFilteredBlockConnected(clients map[chan st
 		ntfn.SubscribedTxs = subscribedTxs[quitChan]
 
 		// Marshal and queue notification.
-		marshalledJSON, err := btcjson.MarshalCmd(btcjson.Version1, nil, ntfn)
+		marshalledJSON, err := btcjson.MarshalCmd(btcjson.RpcVersion1, nil, ntfn)
 		if err != nil {
 			rpcsLog.Errorf("Failed to marshal filtered block "+
 				"connected notification: %v", err)
@@ -796,7 +796,7 @@ func (*wsNotificationManager) notifyFilteredBlockDisconnected(clients map[chan s
 	}
 	ntfn := btcjson.NewFilteredBlockDisconnectedNtfn(block.Height(),
 		hex.EncodeToString(w.Bytes()))
-	marshalledJSON, err := btcjson.MarshalCmd(btcjson.Version1, nil, ntfn)
+	marshalledJSON, err := btcjson.MarshalCmd(btcjson.RpcVersion1, nil, ntfn)
 	if err != nil {
 		rpcsLog.Errorf("Failed to marshal filtered block disconnected "+
 			"notification: %v", err)
@@ -831,7 +831,7 @@ func (m *wsNotificationManager) notifyForNewTx(clients map[chan struct{}]*wsClie
 	}
 
 	ntfn := btcjson.NewTxAcceptedNtfn(txHashStr, btcutil.Amount(amount).ToBTC())
-	marshalledJSON, err := btcjson.MarshalCmd(btcjson.Version1, nil, ntfn)
+	marshalledJSON, err := btcjson.MarshalCmd(btcjson.RpcVersion1, nil, ntfn)
 	if err != nil {
 		rpcsLog.Errorf("Failed to marshal tx notification: %s", err.Error())
 		return
@@ -854,7 +854,7 @@ func (m *wsNotificationManager) notifyForNewTx(clients map[chan struct{}]*wsClie
 			}
 
 			verboseNtfn = btcjson.NewTxAcceptedVerboseNtfn(*rawTx)
-			marshalledJSONVerbose, err = btcjson.MarshalCmd(btcjson.Version1, nil,
+			marshalledJSONVerbose, err = btcjson.MarshalCmd(btcjson.RpcVersion1, nil,
 				verboseNtfn)
 			if err != nil {
 				rpcsLog.Errorf("Failed to marshal verbose tx "+
@@ -980,7 +980,7 @@ func blockDetails(block *btcutil.Block, txIndex int) *btcjson.BlockDetails {
 func newRedeemingTxNotification(txHex string, index int, block *btcutil.Block) ([]byte, error) {
 	// Create and marshal the notification.
 	ntfn := btcjson.NewRedeemingTxNtfn(txHex, blockDetails(block, index))
-	return btcjson.MarshalCmd(btcjson.Version1, nil, ntfn)
+	return btcjson.MarshalCmd(btcjson.RpcVersion1, nil, ntfn)
 }
 
 // notifyForTxOuts examines each transaction output, notifying interested
@@ -1016,7 +1016,7 @@ func (m *wsNotificationManager) notifyForTxOuts(ops map[wire.OutPoint]map[chan s
 			ntfn := btcjson.NewRecvTxNtfn(txHex, blockDetails(block,
 				tx.Index()))
 
-			marshalledJSON, err := btcjson.MarshalCmd(btcjson.Version1, nil, ntfn)
+			marshalledJSON, err := btcjson.MarshalCmd(btcjson.RpcVersion1, nil, ntfn)
 			if err != nil {
 				rpcsLog.Errorf("Failed to marshal processedtx notification: %v", err)
 				continue
@@ -1047,7 +1047,7 @@ func (m *wsNotificationManager) notifyRelevantTxAccepted(tx *btcutil.Tx,
 
 	if len(clientsToNotify) != 0 {
 		n := btcjson.NewRelevantTxAcceptedNtfn(txHexString(tx.MsgTx()))
-		marshalled, err := btcjson.MarshalCmd(btcjson.Version1, nil, n)
+		marshalled, err := btcjson.MarshalCmd(btcjson.RpcVersion1, nil, n)
 		if err != nil {
 			rpcsLog.Errorf("Failed to marshal notification: %v", err)
 			return
@@ -1344,7 +1344,7 @@ out:
 					Code:    btcjson.ErrRPCParse.Code,
 					Message: "Failed to parse request: " + err.Error(),
 				}
-				reply, err = createMarshalledReply(btcjson.Version1, nil, nil, jsonErr)
+				reply, err = createMarshalledReply(btcjson.RpcVersion1, nil, nil, jsonErr)
 				if err != nil {
 					rpcsLog.Errorf("Failed to marshal reply: %v", err)
 					continue
@@ -2407,7 +2407,7 @@ func rescanBlock(wsc *wsClient, lookups *rescanKeys, blk *btcutil.Block) {
 				ntfn := btcjson.NewRecvTxNtfn(txHex,
 					blockDetails(blk, tx.Index()))
 
-				marshalledJSON, err := btcjson.MarshalCmd(btcjson.Version1, nil, ntfn)
+				marshalledJSON, err := btcjson.MarshalCmd(btcjson.RpcVersion1, nil, ntfn)
 				if err != nil {
 					rpcsLog.Errorf("Failed to marshal recvtx notification: %v", err)
 					return
@@ -2774,7 +2774,7 @@ fetchRange:
 				hashList[i].String(), blk.Height(),
 				blk.MsgBlock().Header.Timestamp.Unix(),
 			)
-			mn, err := btcjson.MarshalCmd(btcjson.Version1, nil, n)
+			mn, err := btcjson.MarshalCmd(btcjson.RpcVersion1, nil, n)
 			if err != nil {
 				rpcsLog.Errorf("Failed to marshal rescan "+
 					"progress notification: %v", err)
@@ -2919,7 +2919,7 @@ func handleRescan(wsc *wsClient, icmd interface{}) (interface{}, error) {
 		lastBlockHash.String(), lastBlock.Height(),
 		lastBlock.MsgBlock().Header.Timestamp.Unix(),
 	)
-	if mn, err := btcjson.MarshalCmd(btcjson.Version1, nil, n); err != nil {
+	if mn, err := btcjson.MarshalCmd(btcjson.RpcVersion1, nil, n); err != nil {
 		rpcsLog.Errorf("Failed to marshal rescan finished "+
 			"notification: %v", err)
 	} else {

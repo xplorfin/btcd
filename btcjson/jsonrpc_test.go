@@ -83,7 +83,7 @@ func TestMarshalResponse(t *testing.T) {
 	t.Logf("Running %d tests", len(tests))
 	for i, test := range tests {
 		_, _ = i, test
-		marshalled, err := btcjson.MarshalResponse(btcjson.Version1, testID, test.result, test.jsonErr)
+		marshalled, err := btcjson.MarshalResponse(btcjson.RpcVersion1, testID, test.result, test.jsonErr)
 		if err != nil {
 			t.Errorf("Test #%d (%s) unexpected error: %v", i,
 				test.name, err)
@@ -104,7 +104,7 @@ func TestMiscErrors(t *testing.T) {
 
 	// Force an error in NewRequest by giving it a parameter type that is
 	// not supported.
-	_, err := btcjson.NewRequest(btcjson.Version1, nil, "test", []interface{}{make(chan int)})
+	_, err := btcjson.NewRequest(btcjson.RpcVersion1, nil, "test", []interface{}{make(chan int)})
 	if err == nil {
 		t.Error("NewRequest: did not receive error")
 		return
@@ -113,7 +113,7 @@ func TestMiscErrors(t *testing.T) {
 	// Force an error in MarshalResponse by giving it an id type that is not
 	// supported.
 	wantErr := btcjson.Error{ErrorCode: btcjson.ErrInvalidType}
-	_, err = btcjson.MarshalResponse(btcjson.Version1, make(chan int), nil, nil)
+	_, err = btcjson.MarshalResponse(btcjson.RpcVersion1, make(chan int), nil, nil)
 	if jerr, ok := err.(btcjson.Error); !ok || jerr.ErrorCode != wantErr.ErrorCode {
 		t.Errorf("MarshalResult: did not receive expected error - got "+
 			"%v (%[1]T), want %v (%[2]T)", err, wantErr)
@@ -122,7 +122,7 @@ func TestMiscErrors(t *testing.T) {
 
 	// Force an error in MarshalResponse by giving it a result type that
 	// can't be marshalled.
-	_, err = btcjson.MarshalResponse(btcjson.Version1, 1, make(chan int), nil)
+	_, err = btcjson.MarshalResponse(btcjson.RpcVersion1, 1, make(chan int), nil)
 	if _, ok := err.(*json.UnsupportedTypeError); !ok {
 		wantErr := &json.UnsupportedTypeError{}
 		t.Errorf("MarshalResult: did not receive expected error - got "+

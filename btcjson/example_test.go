@@ -27,7 +27,7 @@ func ExampleMarshalCmd() {
 	// server.  Typically the client would increment the id here which is
 	// request so the response can be identified.
 	id := 1
-	marshalledBytes, err := btcjson.MarshalCmd(btcjson.Version1, id, gbCmd)
+	marshalledBytes, err := btcjson.MarshalCmd(btcjson.RpcVersion1, id, gbCmd)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -95,7 +95,7 @@ func ExampleUnmarshalCmd() {
 func ExampleMarshalResponse() {
 	// Marshal a new JSON-RPC response.  For example, this is a response
 	// to a getblockheight request.
-	marshalledBytes, err := btcjson.MarshalResponse(btcjson.Version1, 1, 350001, nil)
+	marshalledBytes, err := btcjson.MarshalResponse(btcjson.RpcVersion1, 1, 350001, nil)
 	if err != nil {
 		fmt.Println(err)
 		return
