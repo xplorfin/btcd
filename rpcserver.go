@@ -4181,7 +4181,7 @@ func (s *rpcServer) jsonRPCRead(w http.ResponseWriter, r *http.Request, isAdmin 
 				Message: fmt.Sprintf("Failed to parse request: %v",
 					err),
 			}
-			resp, err = btcjson.MarshalResponse("2.0", nil, nil, jsonErr)
+			resp, err = btcjson.MarshalResponse(btcjson.RpcVersion2, nil, nil, jsonErr)
 			if err != nil {
 				rpcsLog.Errorf("Failed to create reply: %v", err)
 			}
@@ -4198,7 +4198,7 @@ func (s *rpcServer) jsonRPCRead(w http.ResponseWriter, r *http.Request, isAdmin 
 					Code:    btcjson.ErrRPCInvalidRequest.Code,
 					Message: "Invalid request: empty batch",
 				}
-				resp, err = btcjson.MarshalResponse("2.0", nil, nil, jsonErr)
+				resp, err = btcjson.MarshalResponse(btcjson.RpcVersion2, nil, nil, jsonErr)
 				if err != nil {
 					rpcsLog.Errorf("Failed to marshal reply: %v", err)
 				}
@@ -4221,7 +4221,7 @@ func (s *rpcServer) jsonRPCRead(w http.ResponseWriter, r *http.Request, isAdmin 
 							Message: fmt.Sprintf("Invalid request: %v",
 								err),
 						}
-						resp, err = btcjson.MarshalResponse("2.0", nil, nil, jsonErr)
+						resp, err = btcjson.MarshalResponse(btcjson.RpcVersion2, nil, nil, jsonErr)
 						if err != nil {
 							rpcsLog.Errorf("Failed to create reply: %v", err)
 						}

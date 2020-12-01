@@ -1499,7 +1499,7 @@ out:
 					Message: fmt.Sprintf("Failed to parse request: %v",
 						err),
 				}
-				reply, err = btcjson.MarshalResponse("2.0", nil, nil, jsonErr)
+				reply, err = btcjson.MarshalResponse(btcjson.RpcVersion2, nil, nil, jsonErr)
 				if err != nil {
 					rpcsLog.Errorf("Failed to create reply: %v", err)
 				}
@@ -1520,7 +1520,7 @@ out:
 						Code:    btcjson.ErrRPCInvalidRequest.Code,
 						Message: "Invalid request: empty batch",
 					}
-					reply, err = btcjson.MarshalResponse("2.0", nil, nil, jsonErr)
+					reply, err = btcjson.MarshalResponse(btcjson.RpcVersion2, nil, nil, jsonErr)
 					if err != nil {
 						rpcsLog.Errorf("Failed to marshal reply: %v", err)
 					}
@@ -1547,7 +1547,7 @@ out:
 								Message: fmt.Sprintf("Invalid request: %v",
 									err),
 							}
-							reply, err = btcjson.MarshalResponse("2.0", nil, nil, jsonErr)
+							reply, err = btcjson.MarshalResponse(btcjson.RpcVersion2, nil, nil, jsonErr)
 							if err != nil {
 								rpcsLog.Errorf("Failed to create reply: %v", err)
 								continue
@@ -1572,7 +1572,7 @@ out:
 								Message: fmt.Sprintf("Invalid request: %v",
 									err),
 							}
-							reply, err = btcjson.MarshalResponse("2.0", nil, nil, jsonErr)
+							reply, err = btcjson.MarshalResponse(btcjson.RpcVersion2, nil, nil, jsonErr)
 							if err != nil {
 								rpcsLog.Errorf("Failed to create reply: %v", err)
 								continue
