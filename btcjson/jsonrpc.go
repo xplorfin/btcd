@@ -9,19 +9,19 @@ import (
 	"fmt"
 )
 
-type RpcVersion string
+type RPCVersion string
 
 const (
 	// version 1 of rpc
-	RpcVersion1 RpcVersion = RpcVersion("1.0")
+	RpcVersion1 RPCVersion = RPCVersion("1.0")
 	// version 2 of rpc
-	RpcVersion2 RpcVersion = RpcVersion("2.0")
+	RpcVersion2 RPCVersion = RPCVersion("2.0")
 )
 
-var validRpcVersions = []RpcVersion{RpcVersion1, RpcVersion2}
+var validRpcVersions = []RPCVersion{RpcVersion1, RpcVersion2}
 
 // check if the rpc version is a valid version
-func (r RpcVersion) IsValid() bool {
+func (r RPCVersion) IsValid() bool {
 	for _, version := range validRpcVersions {
 		if version == r {
 			return true
@@ -31,7 +31,7 @@ func (r RpcVersion) IsValid() bool {
 }
 
 // cast rpc version to a string
-func (r RpcVersion) String() string {
+func (r RPCVersion) String() string {
 	return string(r)
 }
 
@@ -93,7 +93,7 @@ func IsValidIDType(id interface{}) bool {
 // requests, however this struct it being exported in case the caller wants to
 // construct raw requests for some reason.
 type Request struct {
-	Jsonrpc RpcVersion        `json:"jsonrpc"`
+	Jsonrpc RPCVersion        `json:"jsonrpc"`
 	Method  string            `json:"method"`
 	Params  []json.RawMessage `json:"params"`
 	ID      interface{}       `json:"id"`
@@ -124,9 +124,9 @@ func (request *Request) UnmarshalJSON(b []byte) error {
 		if !ok {
 			return makeError(ErrInvalidType, "parameter jsonrpc must parse to a string")
 		}
-		request.Jsonrpc = RpcVersion(jsonrpc)
+		request.Jsonrpc = RPCVersion(jsonrpc)
 		if !request.Jsonrpc.IsValid() {
-			return makeError(ErrInvalidType, "parameter jsonrpc must be of type RpcVersion")
+			return makeError(ErrInvalidType, "parameter jsonrpc must be of type RPCVersion")
 		}
 	}
 	paramsValue, hasParams := data["params"]
@@ -161,7 +161,7 @@ func (request *Request) UnmarshalJSON(b []byte) error {
 // concrete command type with the NewCmd or New<Foo>Cmd functions and call the
 // MarshalCmd function with that command to generate the marshalled JSON-RPC
 // request.
-func NewRequest(rpcVersion RpcVersion, id interface{}, method string, params []interface{}) (*Request, error) {
+func NewRequest(rpcVersion RPCVersion, id interface{}, method string, params []interface{}) (*Request, error) {
 	// default to JSON-RPC 1.0 if RPC type is not specified
 	if rpcVersion != RpcVersion2 && rpcVersion != RpcVersion1 {
 		str := fmt.Sprintf("rpcversion '%s' is invalid", rpcVersion)
@@ -196,7 +196,7 @@ func NewRequest(rpcVersion RpcVersion, id interface{}, method string, params []i
 // interface.  The ID field has to be a pointer to allow for a nil value when
 // empty.
 type Response struct {
-	Jsonrpc RpcVersion      `json:"jsonrpc"`
+	Jsonrpc RPCVersion      `json:"jsonrpc"`
 	Result  json.RawMessage `json:"result"`
 	Error   *RPCError       `json:"error"`
 	ID      *interface{}    `json:"id"`
@@ -207,7 +207,7 @@ type Response struct {
 // provided in case the caller wants to construct raw responses for some reason.
 // Typically callers will instead want to create the fully marshalled JSON-RPC
 // response to send over the wire with the MarshalResponse function.
-func NewResponse(rpcVersion RpcVersion, id interface{}, marshalledResult []byte, rpcErr *RPCError) (*Response, error) {
+func NewResponse(rpcVersion RPCVersion, id interface{}, marshalledResult []byte, rpcErr *RPCError) (*Response, error) {
 	if rpcVersion != RpcVersion2 && rpcVersion != RpcVersion1 {
 		str := fmt.Sprintf("rpcversion '%s' is invalid", rpcVersion)
 		return nil, makeError(ErrInvalidType, str)
@@ -230,7 +230,7 @@ func NewResponse(rpcVersion RpcVersion, id interface{}, marshalledResult []byte,
 // MarshalResponse marshals the passed rpc version, id, result, and RPCError to
 // a JSON-RPC response byte slice that is suitable for transmission to a
 // JSON-RPC client.
-func MarshalResponse(rpcVersion RpcVersion, id interface{}, result interface{}, rpcErr *RPCError) ([]byte, error) {
+func MarshalResponse(rpcVersion RPCVersion, id interface{}, result interface{}, rpcErr *RPCError) ([]byte, error) {
 	if rpcVersion != RpcVersion2 && rpcVersion != RpcVersion1 {
 		str := fmt.Sprintf("rpcversion '%s' is invalid", rpcVersion)
 		return nil, makeError(ErrInvalidType, str)

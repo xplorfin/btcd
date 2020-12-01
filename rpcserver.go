@@ -3942,7 +3942,7 @@ func (s *rpcServer) checkAuth(r *http.Request, require bool) (bool, bool, error)
 // a known concrete command along with any error that might have happened while
 // parsing it.
 type parsedRPCCmd struct {
-	jsonrpc btcjson.RpcVersion
+	jsonrpc btcjson.RPCVersion
 	id      interface{}
 	method  string
 	cmd     interface{}
@@ -4013,7 +4013,7 @@ func parseCmd(request *btcjson.Request) *parsedRPCCmd {
 // createMarshalledReply returns a new marshalled JSON-RPC response given the
 // passed parameters.  It will automatically convert errors that are not of
 // the type *btcjson.RPCError to the appropriate type as needed.
-func createMarshalledReply(rpcVersion btcjson.RpcVersion, id interface{}, result interface{}, replyErr error) ([]byte, error) {
+func createMarshalledReply(rpcVersion btcjson.RPCVersion, id interface{}, result interface{}, replyErr error) ([]byte, error) {
 	var jsonErr *btcjson.RPCError
 	if replyErr != nil {
 		if jErr, ok := replyErr.(*btcjson.RPCError); ok {
