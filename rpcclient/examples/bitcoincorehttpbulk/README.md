@@ -1,7 +1,7 @@
 Bitcoin Core Batch HTTP POST Example
 ==============================
 
-This example shows how to use the rpclient package to connect to a Bitcoin Core RPC server using HTTP POST mode with TLS disabled and uses the batch JSON RPC mode
+This example shows how to use the rpclient package to connect to a Bitcoin Core RPC server using HTTP POST and batch JSON-RPC mode with TLS disabled.
 
 ## Running the Example
 
