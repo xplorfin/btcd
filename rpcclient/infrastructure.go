@@ -1470,6 +1470,9 @@ func New(config *ConnConfig, ntfnHandlers *NotificationHandlers) (*Client, error
 // and having the server process the all at the same time. It's compatible with both
 // btcd and bitcoind
 func NewBatch(config *ConnConfig) (*Client, error) {
+	if !config.HTTPPostMode {
+		return nil, errors.New("http post mode is required to use batch client")
+	}
 	// notification parameter is nil since notifications are not supported in POST mode.
 	client, err := New(config, nil)
 	if err != nil {
