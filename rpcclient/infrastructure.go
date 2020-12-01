@@ -1616,8 +1616,8 @@ func (c *Client) Send() error {
 			return err
 		}
 
-		if individualResult.Error != "" {
-			requestError = errors.New(individualResult.Error)
+		if individualResult.Error != nil {
+			requestError = individualResult.Error
 		}
 
 		result := response{

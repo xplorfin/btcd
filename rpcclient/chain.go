@@ -1288,9 +1288,9 @@ func (r FutureGetBulkResult) Receive() (BulkResult, error) {
 // IndividualBulkResult represents one result
 //from a bulk json rpc api
 type IndividualBulkResult struct {
-	Result interface{} `json:"result"`
-	Error  string      `json:"error"`
-	Id     uint64      `json:"id"`
+	Result interface{}       `json:"result"`
+	Error  *btcjson.RPCError `json:"error"`
+	Id     uint64            `json:"id"`
 }
 
 type BulkResult = map[uint64]IndividualBulkResult
