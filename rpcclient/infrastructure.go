@@ -1465,6 +1465,21 @@ func New(config *ConnConfig, ntfnHandlers *NotificationHandlers) (*Client, error
 	return client, nil
 }
 
+// Batch is a factory that creates a client able to interact with the server using
+// JSON-RPC 2.0. The client is capable of accepting an arbitrary number of requests
+// and having the server process the all at the same time. It's compatible with both
+// btcd and bitcoind
+func NewBatch(config *ConnConfig) (*Client, error) {
+	// notification parameter is nil since notifications are not supported in POST mode.
+	client, err := New(config, nil)
+	if err != nil {
+		return nil, err
+	}
+	client.batch = true //copy the client with changed batch setting
+	client.start()
+	return client, nil
+}
+
 // Connect establishes the initial websocket connection.  This is necessary when
 // a client was created after setting the DisableConnectOnNew field of the
 // Config struct.
@@ -1601,16 +1616,6 @@ func (c *Client) BackendVersion() (BackendVersion, error) {
 	c.backendVersion = &version
 
 	return *c.backendVersion, nil
-}
-
-// Batch is a factory that creates a client able to interact with the server using
-// JSON-RPC 2.0. The client is capable of accepting an arbitrary number of requests
-// and having the server process the all at the same time. It's compatible with both
-// btcd and bitcoind
-func (c *Client) Batch() *Client {
-	c.batch = true //copy the client with changed batch setting
-	c.start()
-	return c
 }
 
 func (c *Client) sendAsync() FutureGetBulkResult {

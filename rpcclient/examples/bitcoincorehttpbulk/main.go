@@ -21,17 +21,12 @@ func main() {
 		HTTPPostMode:        true, // Bitcoin core only supports HTTP POST mode
 		DisableTLS:          true, // Bitcoin core does not provide TLS by default
 	}
-	// Notice the notification parameter is nil since notifications are
-	// not supported in HTTP POST mode.
-	client, err := rpcclient.New(connCfg, nil)
-	defer client.Shutdown()
+	batchClient, err := rpcclient.NewBatch(connCfg)
+	defer batchClient.Shutdown()
 
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// Get the current block count.
-	batchClient := client.Batch()
 
 	// batch mode requires async requests
 	blockCount := batchClient.GetBlockCountAsync()
