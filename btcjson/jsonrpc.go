@@ -103,52 +103,45 @@ type Request struct {
 // field defaults to an empty json.RawMessage array it is omitted by the request
 // or nil if the supplied value is invalid.
 func (request *Request) UnmarshalJSON(b []byte) error {
-	var data map[string]interface{}
-	err := json.Unmarshal(b, &data)
+	// Step 1: Create a type alias of the original struct.
+	type Alias Request
+
+	// Step 2: Create an anonymous struct with raw replacements for the special
+	// fields.
+	aux := &struct {
+		Jsonrpc string        `json:"jsonrpc"`
+		Params  []interface{} `json:"params"`
+		*Alias
+	}{
+		Alias: (*Alias)(request),
+	}
+
+	// Step 3: Unmarshal the data into the anonymous struct.
+	err := json.Unmarshal(b, &aux)
 	if err != nil {
 		return err
 	}
 
-	request.ID = data["id"]
-	methodValue, hasMethod := data["method"]
-	if hasMethod {
-		method, ok := methodValue.(string)
-		if !ok {
-			return makeError(ErrInvalidType, "parameter method must parse to a string")
-		}
-		request.Method = method
+	// Step 4: Convert the raw fields to the desired types
+
+	version := RPCVersion(aux.Jsonrpc)
+	if version.IsValid() {
+		request.Jsonrpc = version
 	}
-	jsonrpcValue, hasJsonrpc := data["jsonrpc"]
-	if hasJsonrpc {
-		jsonrpc, ok := jsonrpcValue.(string)
-		if !ok {
-			return makeError(ErrInvalidType, "parameter jsonrpc must parse to a string")
-		}
-		request.Jsonrpc = RPCVersion(jsonrpc)
-		if !request.Jsonrpc.IsValid() {
-			return makeError(ErrInvalidType, "parameter jsonrpc must be of type RPCVersion")
-		}
-	}
-	paramsValue, hasParams := data["params"]
-	if !hasParams {
-		// set the request param to an empty array if it is ommited in the request
-		request.Params = []json.RawMessage{}
-		// assert the request params is an array of data
-	} else if params, paramsOk := paramsValue.([]interface{}); paramsOk {
-		rawParams := make([]json.RawMessage, 0, len(params))
-		for _, param := range params {
-			marshalledParam, err := json.Marshal(param)
-			if err != nil {
-				return err
-			}
-			rawMessage := json.RawMessage(marshalledParam)
-			rawParams = append(rawParams, rawMessage)
+
+	var rawParams []json.RawMessage
+
+	for _, param := range aux.Params {
+		marshalledParam, err := json.Marshal(param)
+		if err != nil {
+			return err
 		}
 
-		request.Params = rawParams
-	} else {
-		return Error{Description: "No response received"}
+		rawMessage := json.RawMessage(marshalledParam)
+		rawParams = append(rawParams, rawMessage)
 	}
+
+	request.Params = rawParams
 
 	return nil
 }
