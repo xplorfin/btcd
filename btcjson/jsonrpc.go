@@ -129,7 +129,7 @@ func (request *Request) UnmarshalJSON(b []byte) error {
 		request.Jsonrpc = version
 	}
 
-	var rawParams []json.RawMessage
+	rawParams := make([]json.RawMessage, 0)
 
 	for _, param := range aux.Params {
 		marshalledParam, err := json.Marshal(param)
