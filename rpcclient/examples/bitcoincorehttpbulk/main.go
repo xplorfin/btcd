@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2019 The btcsuite developers
+// Copyright (c) 2014-2020 The btcsuite developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
@@ -6,8 +6,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/btcsuite/btcd/rpcclient"
 	"log"
+
+	"github.com/btcsuite/btcd/rpcclient"
 )
 
 func main() {

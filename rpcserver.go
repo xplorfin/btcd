@@ -3985,9 +3985,6 @@ func parseCmd(request *btcjson.Request) *parsedRPCCmd {
 		method:  request.Method,
 	}
 
-	parsedCmd.id = request.ID
-	parsedCmd.method = request.Method
-
 	cmd, err := btcjson.UnmarshalCmd(request)
 	if err != nil {
 		// When the error is because the method is not registered,
@@ -4030,6 +4027,7 @@ func createMarshalledReply(rpcVersion btcjson.RPCVersion, id interface{}, result
 // parses it and returns a marshalled response.
 func (s *rpcServer) processRequest(request *btcjson.Request, isAdmin bool, closeChan <-chan struct{}) []byte {
 	var result interface{}
+	var err error
 	var jsonErr *btcjson.RPCError
 
 	if !isAdmin {
@@ -4065,8 +4063,14 @@ func (s *rpcServer) processRequest(request *btcjson.Request, isAdmin bool, close
 		if parsedCmd.err != nil {
 			jsonErr = parsedCmd.err
 		} else {
-			result, _ = s.standardCmdResult(parsedCmd,
+			result, err = s.standardCmdResult(parsedCmd,
 				closeChan)
+			if err != nil {
+				jsonErr = &btcjson.RPCError{
+					Code:    btcjson.ErrRPCInvalidRequest.Code,
+					Message: "Invalid request: malformed",
+				}
+			}
 		}
 	}
 

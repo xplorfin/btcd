@@ -1260,41 +1260,6 @@ func (c *Client) GetCFilterHeader(blockHash *chainhash.Hash,
 	return c.GetCFilterHeaderAsync(blockHash, filterType).Receive()
 }
 
-// FutureGetBulkResult waits for the responses promised by the future
-// and returns them in a channel
-type FutureGetBulkResult chan *response
-
-// Receive waits for the response promised by the future and returns the hash of
-// the best block in the longest block chain.
-func (r FutureGetBulkResult) Receive() (BulkResult, error) {
-	m := make(BulkResult)
-	res, err := receiveFuture(r)
-	if err != nil {
-		return nil, err
-	}
-	var arr []IndividualBulkResult
-	err = json.Unmarshal(res, &arr)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, results := range arr {
-		m[results.Id] = results
-	}
-
-	return m, nil
-}
-
-// IndividualBulkResult represents one result
-//from a bulk json rpc api
-type IndividualBulkResult struct {
-	Result interface{}       `json:"result"`
-	Error  *btcjson.RPCError `json:"error"`
-	Id     uint64            `json:"id"`
-}
-
-type BulkResult = map[uint64]IndividualBulkResult
-
 // FutureGetBlockStatsResult is a future promise to deliver the result of a
 // GetBlockStatsAsync RPC invocation (or an applicable error).
 type FutureGetBlockStatsResult chan *response

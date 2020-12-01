@@ -163,7 +163,7 @@ type Client struct {
 	// disconnected indicated whether or not the server is disconnected.
 	disconnected bool
 
-	// wether or not to batch requests, false unless changed by Bulk()
+	// whether or not to batch requests, false unless changed by Batch()
 	batch     bool
 	batchList *list.List
 
@@ -297,6 +297,41 @@ func (c *Client) trackRegisteredNtfns(cmd interface{}) {
 		}
 	}
 }
+
+// FutureGetBulkResult waits for the responses promised by the future
+// and returns them in a channel
+type FutureGetBulkResult chan *response
+
+// Receive waits for the response promised by the future and returns an map
+// of results by request id
+func (r FutureGetBulkResult) Receive() (BulkResult, error) {
+	m := make(BulkResult)
+	res, err := receiveFuture(r)
+	if err != nil {
+		return nil, err
+	}
+	var arr []IndividualBulkResult
+	err = json.Unmarshal(res, &arr)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, results := range arr {
+		m[results.Id] = results
+	}
+
+	return m, nil
+}
+
+// IndividualBulkResult represents one result
+// from a bulk json rpc api
+type IndividualBulkResult struct {
+	Result interface{}       `json:"result"`
+	Error  *btcjson.RPCError `json:"error"`
+	Id     uint64            `json:"id"`
+}
+
+type BulkResult = map[uint64]IndividualBulkResult
 
 // inMessage is the first type that an incoming message is unmarshaled
 // into. It supports both requests (for notification support) and
@@ -1568,7 +1603,10 @@ func (c *Client) BackendVersion() (BackendVersion, error) {
 	return *c.backendVersion, nil
 }
 
-// Batch makes batch requests
+// Batch is a factory that creates a client able to interact with the server using
+// JSON-RPC 2.0. The client is capable of accepting an arbitrary number of requests
+// and having the server process the all at the same time. It's compatible with both
+// btcd and bitcoind
 func (c *Client) Batch() *Client {
 	c.batch = true //copy the client with changed batch setting
 	c.start()
@@ -1585,6 +1623,7 @@ func (c *Client) sendAsync() FutureGetBulkResult {
 		marshalledRequest = append(marshalledRequest, []byte(",")...)
 	}
 	if len(marshalledRequest) > 0 {
+		// removes the trailing comma to process the request individually
 		marshalledRequest = marshalledRequest[:len(marshalledRequest)-1]
 	}
 	marshalledRequest = append(marshalledRequest, []byte("]")...)
@@ -1599,7 +1638,8 @@ func (c *Client) sendAsync() FutureGetBulkResult {
 	return responseChan
 }
 
-// Send sends batch requests
+// Marshall's bulk requests and sends to the server
+// creates a response channel to receive the response
 func (c *Client) Send() error {
 	result, err := c.sendAsync().Receive()
 
