@@ -10,6 +10,7 @@ package integration
 import (
 	"bytes"
 	"fmt"
+	"github.com/btcsuite/btcd/rpcclient"
 	"os"
 	"runtime/debug"
 	"testing"
@@ -19,18 +20,18 @@ import (
 )
 
 func testGetBestBlock(r *rpctest.Harness, t *testing.T) {
-	_, prevbestHeight, err := r.Node.GetBestBlock()
+	_, prevbestHeight, err := r.Client.GetBestBlock()
 	if err != nil {
 		t.Fatalf("Call to `getbestblock` failed: %v", err)
 	}
 
 	// Create a new block connecting to the current tip.
-	generatedBlockHashes, err := r.Node.Generate(1)
+	generatedBlockHashes, err := r.Client.Generate(1)
 	if err != nil {
 		t.Fatalf("Unable to generate block: %v", err)
 	}
 
-	bestHash, bestHeight, err := r.Node.GetBestBlock()
+	bestHash, bestHeight, err := r.Client.GetBestBlock()
 	if err != nil {
 		t.Fatalf("Call to `getbestblock` failed: %v", err)
 	}
@@ -50,17 +51,17 @@ func testGetBestBlock(r *rpctest.Harness, t *testing.T) {
 
 func testGetBlockCount(r *rpctest.Harness, t *testing.T) {
 	// Save the current count.
-	currentCount, err := r.Node.GetBlockCount()
+	currentCount, err := r.Client.GetBlockCount()
 	if err != nil {
 		t.Fatalf("Unable to get block count: %v", err)
 	}
 
-	if _, err := r.Node.Generate(1); err != nil {
+	if _, err := r.Client.Generate(1); err != nil {
 		t.Fatalf("Unable to generate block: %v", err)
 	}
 
 	// Count should have increased by one.
-	newCount, err := r.Node.GetBlockCount()
+	newCount, err := r.Client.GetBlockCount()
 	if err != nil {
 		t.Fatalf("Unable to get block count: %v", err)
 	}
@@ -72,17 +73,17 @@ func testGetBlockCount(r *rpctest.Harness, t *testing.T) {
 
 func testGetBlockHash(r *rpctest.Harness, t *testing.T) {
 	// Create a new block connecting to the current tip.
-	generatedBlockHashes, err := r.Node.Generate(1)
+	generatedBlockHashes, err := r.Client.Generate(1)
 	if err != nil {
 		t.Fatalf("Unable to generate block: %v", err)
 	}
 
-	info, err := r.Node.GetInfo()
+	info, err := r.Client.GetInfo()
 	if err != nil {
 		t.Fatalf("call to getinfo cailed: %v", err)
 	}
 
-	blockHash, err := r.Node.GetBlockHash(int64(info.Blocks))
+	blockHash, err := r.Client.GetBlockHash(int64(info.Blocks))
 	if err != nil {
 		t.Fatalf("Call to `getblockhash` failed: %v", err)
 	}
@@ -94,10 +95,45 @@ func testGetBlockHash(r *rpctest.Harness, t *testing.T) {
 	}
 }
 
+func testBulkClient(r *rpctest.Harness, t *testing.T) {
+	// Create a new block connecting to the current tip.
+	generatedBlockHashes, err := r.Client.Generate(20)
+	if err != nil {
+		t.Fatalf("Unable to generate block: %v", err)
+	}
+
+	var futureBlockResults []rpcclient.FutureGetBlockResult
+	for _, hash := range generatedBlockHashes {
+		futureBlockResults = append(futureBlockResults, r.BatchClient.GetBlockAsync(hash))
+	}
+
+	err = r.BatchClient.Send()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+BLOCKRESULT:
+	for _, block := range futureBlockResults {
+		msgBlock, err := block.Receive()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		blockHash := msgBlock.Header.BlockHash()
+		for _, hash := range generatedBlockHashes {
+			if blockHash.IsEqual(hash) {
+				continue BLOCKRESULT
+			}
+		}
+		t.Fatalf("expected hash %s  to be in generated hash list", blockHash)
+	}
+}
+
 var rpcTestCases = []rpctest.HarnessTestCase{
 	testGetBestBlock,
 	testGetBlockCount,
 	testGetBlockHash,
+	testBulkClient,
 }
 
 var primaryHarness *rpctest.Harness

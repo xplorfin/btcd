@@ -1312,6 +1312,8 @@ func (r FutureDeriveAddressesResult) Receive() (*btcjson.DeriveAddressesResult, 
 	if err != nil {
 		return nil, err
 	}
+	var arr []IndividualBulkResult
+	err = json.Unmarshal(res, &arr)
 
 	var deriveAddressesResult btcjson.DeriveAddressesResult
 
