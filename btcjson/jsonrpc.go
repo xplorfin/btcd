@@ -9,6 +9,7 @@ import (
 	"fmt"
 )
 
+// RPCVersion is a type to indicate RPC versions.
 type RPCVersion string
 
 const (

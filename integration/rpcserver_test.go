@@ -10,10 +10,12 @@ package integration
 import (
 	"bytes"
 	"fmt"
-	"github.com/btcsuite/btcd/rpcclient"
+	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"os"
 	"runtime/debug"
 	"testing"
+
+	"github.com/btcsuite/btcd/rpcclient"
 
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/integration/rpctest"
@@ -112,21 +114,26 @@ func testBulkClient(r *rpctest.Harness, t *testing.T) {
 		t.Fatal(err)
 	}
 
-BLOCKRESULT:
+	isKnownBlockHash := func(blockHash chainhash.Hash) bool {
+		for _, hash := range generatedBlockHashes {
+			if blockHash.IsEqual(hash) {
+				return true
+			}
+		}
+		return false
+	}
+
 	for _, block := range futureBlockResults {
 		msgBlock, err := block.Receive()
 		if err != nil {
 			t.Fatal(err)
 		}
-
 		blockHash := msgBlock.Header.BlockHash()
-		for _, hash := range generatedBlockHashes {
-			if blockHash.IsEqual(hash) {
-				continue BLOCKRESULT
-			}
+		if !isKnownBlockHash(blockHash) {
+			t.Fatalf("expected hash %s  to be in generated hash list", blockHash)
 		}
-		t.Fatalf("expected hash %s  to be in generated hash list", blockHash)
 	}
+
 }
 
 var rpcTestCases = []rpctest.HarnessTestCase{

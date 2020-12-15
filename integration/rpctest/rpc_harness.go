@@ -294,6 +294,10 @@ func (h *Harness) tearDown() error {
 		h.Client.Shutdown()
 	}
 
+	if h.BatchClient != nil {
+		h.BatchClient.Shutdown()
+	}
+
 	if err := h.node.shutdown(); err != nil {
 		return err
 	}
