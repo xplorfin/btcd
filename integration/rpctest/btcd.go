@@ -6,10 +6,12 @@ package rpctest
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"sync"
+	"github.com/confluentinc/bincover"
 )
 
 var (
@@ -48,6 +50,21 @@ func btcdExecutablePath() (string, error) {
 	if runtime.GOOS == "windows" {
 		outputPath += ".exe"
 	}
+	// 2. Initializing a `CoverageCollector`
+	collector := bincover.NewCoverageCollector("echo_arg_coverage.out", true)
+	// 3. Calling `collector.Setup()` once before running all of your tests
+	err = collector.Setup()
+	defer func() {
+		// 5. Calling `collector.TearDown()` after all the tests have finished
+		err := collector.TearDown()
+		if err != nil {
+			panic(err)
+		}
+		err = os.Remove(outputPath)
+		if err != nil {
+			panic(err)
+		}
+	}()
 	cmd := exec.Command(
 		"go", "build", "-o", outputPath, "github.com/btcsuite/btcd",
 	)
@@ -55,6 +72,8 @@ func btcdExecutablePath() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("Failed to build btcd: %v", err)
 	}
+	/*output, exitCode, */
+	_, _, _ = collector.RunBinary(outputPath, "main", []string{}, []string{})
 
 	// Save executable path so future calls do not recompile.
 	executablePath = outputPath
